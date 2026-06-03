@@ -1,60 +1,84 @@
 #Requires AutoHotkey v2.0
 #SingleInstance force
 
-
-WINDOW_WIDTH := 280
-WINDOW_HEIGHT := 275
+WINDOW_WIDTH := 265
+WINDOW_HEIGHT := 355
 WINDOW_X := 0
 WINDOW_Y := 0
+
+;==============================================================================
+;==================================== GUI =====================================
+;==============================================================================
+
 myGui := Gui("+0x40000") ; resizable
 myGui.MarginX := 10
-myGui.Marginy := 10
+myGui.MarginY := 10
+MyGui.SetFont(, "Arial")
+myGui.SetFont(, "Verdana")
 
-myGui.SetFont("s12")
-myGui.AddText("Section", "Clipboard contents:")
+myGui.SetFont("s18")
+text1 := myGui.AddText("x10", "F5:")
+text1.SetFont("Bold c3399FF")
+myGui.SetFont("s9")
+text2 := myGui.AddText("yp w205 r2", "paste clipboard with [Tab]s inbetween each value")
+
+myGui.SetFont("s18")
+text3 := myGui.AddText("x10 yp+45 c3399FF", "F8:")
+text3.SetFont("Bold c3399FF")
+myGui.SetFont("s9")
+text4 := myGui.AddText("yp w205 r2", "paste clipboard with [Down]s inbetween each value")
 
 myGui.SetFont("s8")
-myBtn := myGui.AddButton("x+50 w60 h20", "Refresh")
-myBtn.OnEvent("Click", onButton)
+myBtn := myGui.AddButton("x190 y100 w65 h35 Section", "Read Clipboard")
+myBtn.OnEvent("Click", printClipboard)
+
+myGui.SetFont("s12")
+myGui.AddText("x5 ys+15 Section", "Clipboard contents:")
 
 myGui.SetFont("s10")
-myEdit := myGui.AddEdit("xs+0 Multi ReadOnly VScroll HScroll w250 h200", "")
-myEdit.Opt("BackgroundBFDBFE")
-
-statusBar := myGui.AddStatusBar("xs", "")
-statusBar.SetFont("s12")
+editBox := myGui.AddEdit("xs+0 ys+28 Multi ReadOnly VScroll HScroll w250 h200", "")
+editBox.Opt("BackgroundBFDBFE")
 
 myGui.OnEvent("Close", (*) => ExitApp)
-myGui.Show(Format("w{1} h{2} x{3} y{4}",
-	WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_X, WINDOW_Y))
+myGui.Show(Format("w{1} h{2} x{3} y{4}", WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_X, WINDOW_Y))
 
-~^c::{
-	Sleep(10)
-	onButton()
+;==============================================================================
+;=============================== EVENTS & KEYS ================================
+;==============================================================================
+
+OnClipboardChange clipChanged
+
+$F5::pasteClipboard("{tab}")
+$F8::pasteClipboard("{down}")
+
+;==============================================================================
+;================================= FUNCTIONS ==================================
+;==============================================================================
+
+clipChanged(DataType) {
+	if (DataType != 1) {
+		editBox.value := ""
+		return
+	}
+	printClipboard()
 }
 
-onButton(*) {
-	clip := A_Clipboard
-	clip := StrReplace(clip, " ", "")
-	clip := StrReplace(clip, ",", "")
-	clip := StrReplace(clip, "$", "")
-	myEdit.Value := clip
-
-	statusBar.SetText((clip == "") ? "" : "Press F5 to send tabbed text")
+printClipboard(*) {
+	clip_1 := RegExReplace(A_Clipboard, "[ ,$]", "")
+	clip_2 := RegExReplace(clip_1, "(`r`n)[`r`n]+", "${1}")
+	editBox.Value := clip_2
 }
 
-$F5::{
-	arr := StrSplit(myEdit.Value, [A_TAB, "`n"])
-	for x in arr {
-		if GetKeyState("ESC", "P") {
+pasteClipboard(key) {
+	arr := StrSplit(editBox.Value, [A_TAB, "`n"])
+	for field in arr {
+		if GetKeyState("ESC", "P")
 			break
-		}
-		if (x = "") {
+		if (field = "")
 			continue
-		}
-		Send(x)
+		Send(field)
 		Sleep(10)
-		Send("{tab}")
+		Send(key)
 		Sleep(10)
 	}
 }
