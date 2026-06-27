@@ -30,7 +30,6 @@ btn2.OnEvent("Click", (*) => pasteClipboard("{down}"))
 text1 := myGui.AddText("yp w180 r2", "paste clipboard with [Down Key]s inbetween each value")
 
 
-
 myGui.SetFont("s8")
 myBtn := myGui.AddButton("x190 y100 w65 h35 Section", "Read Clipboard")
 myBtn.OnEvent("Click", printClipboard)
@@ -39,26 +38,37 @@ myGui.SetFont("s12")
 myGui.AddText("x5 ys+15 Section", "Clipboard contents:")
 
 myGui.SetFont("s10")
-editBox := myGui.AddEdit("xs+0 ys+28 Multi ReadOnly VScroll HScroll w250 h200", "")
+editBox := myGui.AddEdit("xs+0 ys+28 Multi ReadOnly VScroll HScroll w250 h185", "")
 editBox.Opt("BackgroundBFDBFE")
 
-myGui.OnEvent("Close", (*) => ExitApp())
+statusBar := mygui.AddStatusBar()
+statusBar.SetText("")
+
 myGui.Show(Format("w{1} h{2} x{3} y{4}", WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_X, WINDOW_Y))
+getStartingClipboard()
 
 ;==============================================================================
 ;=============================== EVENTS & KEYS ================================
 ;==============================================================================
 
-OnClipboardChange clipChanged
+OnClipboardChange onClipChanged
 myGui.OnEvent("Size", onWindowResized)
+myGui.OnEvent("Close", (*) => ExitApp())
 
 ;==============================================================================
 ;================================= FUNCTIONS ==================================
 ;==============================================================================
 
-clipChanged(DataType) {
+getStartingClipboard(*) {
+	if DllCall("IsClipboardFormatAvailable", "uint", 1) {
+		printClipboard()
+	}
+}
+
+onClipChanged(DataType) {
 	if (DataType != 1) {
 		editBox.value := ""
+		statusBar.SetText("")
 		return
 	}
 	printClipboard()
@@ -66,13 +76,31 @@ clipChanged(DataType) {
 
 onWindowResized(guiObject, eventInfo, width, height) {
 	editBox.GetPos(&x, &y)
-	editBox.Move(x, y, width - x - 20, height - y - 10)
+	editBox.Move(x, y, width - x - 10, height - y - 27)
 }
 
 printClipboard(*) {
 	clip_1 := RegExReplace(A_Clipboard, "[ ,$]", "")
 	clip_2 := RegExReplace(clip_1, "(`r`n)[`r`n]+", "${1}")
 	editBox.Value := clip_2
+	refreshStats()
+}
+
+refreshStats(*) {
+	lines := StrSplit(editBox.value, "`n", "`r")
+	IF(StrLen(lines[-1]) = 0) {
+		lines.Pop()
+	}
+
+	max_tabs := 0
+	for index, line in lines {
+		RegExReplace(line, "`t",, &num_tabs)
+		max_tabs := (num_tabs > max_tabs) ? num_tabs : max_tabs 
+	}
+	num_rows := lines.Length
+	num_cols := max_tabs + 1
+
+	statusBar.SetText("  " . num_rows . "r x " . num_cols . "c")
 }
 
 pasteClipboard(key) {
