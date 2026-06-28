@@ -13,23 +13,21 @@ orderData := [
 	{ value: "", name: "Last Shipment", regex: "Last Shipment" },
 	{ value: "", name: "Last Invoice", regex: "Last Invoice" },
 	{ value: "", name: "Template Code", regex: "Template Code" },
-	{ value: "", name: "PO", regex: "PO" },
-	{ value: "", name: "Order Date", regex: "Order Date" },
+	{ value: "", name: "PO", regex: "p(urchase)?o(rder)?" },
+	{ value: "", name: "Order Date", regex: "order ?(date|day)" },
 	{ value: "", name: "On Hold", regex: "On Hold" },
 	{ value: "", name: "Order Type", regex: "Order Type" },
 	{ value: "", name: "From Multiple Quotes", regex: "From Multiple Quotes" },
-	{ value: "", name: "Ship-To Location", regex: "ship( )?to( location)?" },
-	{ value: "", name: "Location", regex: "Location" },
-	
+	{ value: "", name: "Ship-To Location", regex: "ship ?((to)? ?|loc(ation)?)" },
+	{ value: "", name: "Location", regex: "[^ship ]loc(ation)?" },
 	{ value: "", name: "Delivery By", regex: "del(iver)?y? ?(By)?" },
-	
-	{ value: "", name: "Exp. Ship Date", regex: "(Exp(ected)? )?Ship( )?(Date|Day)?" },
+	{ value: "", name: "Exp. Ship Date", regex: "(exp(ected)? )?ship( )?(date|day|by)?" },
 	{ value: "", name: "Calc Tax", regex: "Calc Tax" },
-	{ value: "", name: "Ship Via", regex: "Ship Via" },
-	{ value: "", name: "???", regex: "z y x" },
-	{ value: "", name: "Tracking No", regex: "Track(ing)?" },
-	{ value: "", name: "Description", regex: "Desc(ription)?" },
-	{ value: "", name: "Reference", regex: "Ref(erence)?" },
+	{ value: "", name: "Ship Via", regex: "(ship )?via" },
+	{ value: "", name: "Empty Box", regex: "empty box" },
+	{ value: "", name: "Tracking No", regex: "track(ing)?" },
+	{ value: "", name: "Description", regex: "desc(ription)?" },
+	{ value: "", name: "Reference", regex: "ref(erence)?" },
 ]
 
 ;==============================================================================
@@ -74,12 +72,13 @@ btn3.OnEvent("Click", onEnterOrderData)
 myGui.SetFont("s8 norm cBlue")
 text3 := myGui.AddText("yp w150 r2", "testing out entering order data")
 
-capturedText := myGui.AddText("xs w200 h100 r4", "")
+myGui.SetFont("s9 bold c075985")
+capturedText := myGui.AddText("xs w200 h100 r4 +Right", "")
 
 ;============== Below Tab ==============
 myTabs.UseTab()
 
-myGui.SetFont("s6 cBlack")
+myGui.SetFont("s6 norm cBlack")
 myBtn := myGui.AddButton("x200 y140 w55 h25 Section y" . TAB_HEIGHT + 15, "Read Clipboard")
 myBtn.OnEvent("Click", printClipboard)
 
@@ -144,7 +143,7 @@ printClipboard(*) {
 collectOrderData(*) {
 	copy := editBox.Value
 	prefix := "(?i)"
-	suffix := "[`t`n](?<nr>[^`t`n]+)"
+	suffix := "[`t`n: ](?<nr>[^`t`n]+)"
 
 	for index, item in orderData {
 		found := RegExMatch(editBox.Value, prefix . item.regex . suffix, &SubPat)
