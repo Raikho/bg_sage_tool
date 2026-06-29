@@ -41,9 +41,9 @@ myGui.MarginY := 10
 MyGui.SetFont(, "Arial")
 myGui.SetFont(, "Verdana")
 
-myTabs := myGui.Add("Tab3", "Choose1 w" . WINDOW_WIDTH - 20 . " h" . TAB_HEIGHT, ["data", "order", "item"])
+myTabs := myGui.Add("Tab3", "Choose4 w" . WINDOW_WIDTH - 20 . " h" . TAB_HEIGHT, ["data", "order", "item", "settings"])
 
-;================ Tab 1 ================
+;================ Tab 1 - DATA ================
 myTabs.UseTab(1)
 
 ;==== First Button
@@ -63,7 +63,7 @@ myGui.SetFont("s7 norm cBlue")
 text2 := myGui.AddText("yp w180 r2", "paste clipboard with [DownKey]s inbetween each value")
 
 
-;================ Tab 2 ================
+;================ Tab 2 - ORDER ================
 myTabs.UseTab(2)
 
 myGui.SetFont("s8 bold cBlack")
@@ -77,6 +77,17 @@ progressBar.Visible := false
 
 myGui.SetFont("s9 bold c075985")
 capturedText := myGui.AddText("xs w200 h100 r4 +Right", "")
+
+;================ Tab 3 - ITEM ================
+myTabs.UseTab(3)
+
+
+;================ Tab 4 - SETTINGS ================
+myTabs.UseTab(4)
+myGui.AddText("Section", "Delay (ms) :"),
+delay := myGui.AddEdit("ys w50 h20 Number Limit4", 200),
+myGui.AddText("xs Section", "Special Delay (ms):"),
+delay2 := myGui.AddEdit("ys w50 h20 Number Limit4", 1000),
 
 ;============== Below Tab ==============
 myTabs.UseTab()
@@ -215,16 +226,16 @@ onEnterOrderData(*) {
 		if(index != orderData.Length) {
 			Send("{tab}")
 		}
-		Sleep(200)
+		Sleep(delay.value)
 		if(item.name = "Customer No") {
-			sleep(300)
+			sleep(delay.value)
 			progressBar.Value := 20
-			sleep(300)
+			sleep(delay.value)
 			progressBar.value := 30
-			sleep(300)
+			sleep(delay2.value)
 		}
 		if(FALSE) {
-			Sleep(500)
+			Sleep(delay2.value)
 		}
 		progressBar.Value := 30 + 70 * (index / orderData.Length)
 	}
